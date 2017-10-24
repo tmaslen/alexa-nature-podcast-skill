@@ -1,0 +1,24 @@
+{
+  "name": "alexa-nature-podcast-skill",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "dependencies": {
+    "commander": "^2.11.0"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "colly": "^0.8.1",
+    "mocha": "^3.5.3",
+    "xml2js": "^0.4.19"
+  },
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha",
+    "colly": "./node_modules/colly/bin/colly"
+  },
+  "author": "",
+  "license": "ISC"
+}

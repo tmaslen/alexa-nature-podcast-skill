@@ -1,0 +1,7 @@
+{
+	"region": "eu-west-1",
+	"awsProfile": "colly_tester",
+	"environmentVariables": {
+ 		"applicationId": "amzn1.ask.skill.c64b0b7b-cfb9-4e3c-bcf1-37fb5b56f045"
+ 	}
+}

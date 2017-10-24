@@ -1,0 +1,54 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Resources" : {
+    "natureAlexaSkillPodcastUpdateDataDynamoDBTable" : {
+      "Type" : "AWS::DynamoDB::Table",
+      "Properties" : {
+        "AttributeDefinitions" : [
+          {
+            "AttributeName" : "id",
+            "AttributeType" : "S"   
+          },
+          {
+            "AttributeName" : "url",
+            "AttributeType" : "S"
+          }
+        ],
+        "KeySchema" : [
+          {
+            "AttributeName" : "id",
+            "KeyType" : "HASH"
+          },
+          {
+            "AttributeName" : "url",
+            "KeyType" : "RANGE"
+          }
+        ],
+        "ProvisionedThroughput" : {
+          "ReadCapacityUnits" : "5",
+          "WriteCapacityUnits" : "5"
+        },
+        "TableName" : "naturePodcasts",
+      }
+    },
+    "natureAlexaSkillPodcastUpdateDataPolicy": {
+      "Type" : "AWS::IAM::ManagedPolicy",
+      "Properties" : {
+        "ManagedPolicyName" : "natureAlexaSkillPodcastUpdateDataPolicy",
+        "Path": "/",
+        "PolicyDocument" : {
+           "Version" : "2012-10-17",
+           "Statement": [{
+             "Effect"   : "Allow",
+             "Action"   : [
+                "dynamodb:PutItem",
+                "dynamodb:GetItem",
+                "dynamodb:Scan"
+             ],
+             "Resource" : {"Fn::GetAtt": ["natureAlexaSkillPodcastUpdateDataDynamoDBTable", "Arn"] }
+           }]
+        }
+      }
+    }
+  }
+}
