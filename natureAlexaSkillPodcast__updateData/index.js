@@ -1,6 +1,7 @@
 const xmlStringToJson = require( "xml2js" ).parseString;
 const fs = require( "fs" );
 const AWS = require( "aws-sdk" );
+const request = require('request');
 
 AWS.config.region = "eu-west-1";
 
@@ -95,26 +96,34 @@ function postData () {
 			
 			result.rss.channel[ 0 ].item.forEach( ( podcast, i ) => {
 
-				const params = {
-					Item: {
-						"id": {
-							S: i.toString()
-						}, 
-						"url": {
-							S: podcast.link[ 0 ]
-						}
-					}, 
-					ReturnConsumedCapacity: "TOTAL", 
-					TableName: "naturePodcasts"
-				};
+				request( podcast[ "media:content" ][ 0 ].$.url, ( err, response, body ) => {
+					
+					const redirectedUrl = response.request.uri.href;
 
-				dynamodb.putItem( params, ( err, data ) => {
-					if ( err ) {
-						reject( err );
-					} else {
-						console.log( data );
-						resolve();
-					}
+					console.log( response.request.uri.href );
+
+					const params = {
+						Item: {
+							"id": {
+								S: i.toString()
+							}, 
+							"url": {
+								S: redirectedUrl
+							}
+						}, 
+						ReturnConsumedCapacity: "TOTAL", 
+						TableName: "naturePodcasts"
+					};
+
+					dynamodb.putItem( params, ( err, data ) => {
+						if ( err ) {
+							reject( err );
+						} else {
+							console.log( data );
+							resolve();
+						}
+					});
+
 				});
 
 			});
@@ -129,6 +138,8 @@ exports.handler = function ( event, context, callback ) {
 	// Start here
 	// every hour start the process
 	// download new copy of data
+
+	// postData();
 
 	deleteTable()
 		.then( createTable )

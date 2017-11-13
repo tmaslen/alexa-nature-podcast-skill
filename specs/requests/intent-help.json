@@ -18,13 +18,13 @@
   },
   "request": {
     "type": "IntentRequest",
-    "requestId": "EdwRequestId.ed1e5c59-a622-4822-9033-a007c4f1e79d",
+    "requestId": "EdwRequestId.a4df1761-648c-401f-bf2b-51e93734a2be",
     "intent": {
-      "name": "PlayAudio",
+      "name": "AMAZON.HelpIntent",
       "slots": {}
     },
     "locale": "en-GB",
-    "timestamp": "2017-10-27T09:36:59Z"
+    "timestamp": "2017-10-27T09:47:13Z"
   },
   "context": {
     "AudioPlayer": {

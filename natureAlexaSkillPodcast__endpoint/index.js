@@ -8,43 +8,53 @@ const alexaServiceRequest = require( "../lib/alexa-service-request" );
 
 function buildSpeechletResponse ( title, output, repromptText, shouldEndSession ) {
     return {
-        outputSpeech: {
-            type: 'PlainText',
-            text: output,
+      "version": "1.0",
+      "response": {
+        "outputSpeech": {
+            "type": "PlainText",
+            "text": output
         },
-        card: {
-            type: 'Simple',
-            title: `SessionSpeechlet - ${title}`,
-            content: `SessionSpeechlet - ${output}`,
+        "card": {
+            "type": "Simple",
+            "title": `SessionSpeechlet - ${title}`,
+            "content": `SessionSpeechlet - ${output}`
         },
-        reprompt: {
-            outputSpeech: {
-                type: 'PlainText',
-                text: repromptText,
-            },
+        "reprompt": {
+            "outputSpeech": {
+                "type": "PlainText",
+                "text": repromptText
+            }
         },
-        shouldEndSession,
-    };
+        "shouldEndSession": shouldEndSession
+      },
+      "sessionAttributes": {
+        "debug": "200"
+      }
+    }
 }
 
-function introducePodcast ( launchRequest, session, callback ) {
-
-    console.log(`introducePodcast requestId=${launchRequest.requestId}, sessionId=${session.sessionId}`);
+function introducePodcast ( launchRequest, session, context, callback ) {
 
     const sessionAttributes = {};
     const cardTitle = "Welcome";
     const speechOutput = "Say play to start litening to the latest Nature podcast. Each week Nature publishes a free audio show. Every show features highlighted content from the week's edition of Nature including interviews with the people behind the science, and in-depth commentary and analysis from journalists covering science around the world.";
     const repromptText = "Want to play the podcast?";
-    const shouldEndSession = false;
+    const shouldEndSession = true;
+
+    const speechResponse = buildSpeechletResponse(
+        cardTitle,
+        speechOutput,
+        repromptText,
+        shouldEndSession
+    );
+
+    console.log( "****" );
+    console.log( speechResponse );
+    console.log( "****" );
 
     callback(
         null,
-        buildSpeechletResponse(
-            cardTitle,
-            speechOutput,
-            repromptText,
-            shouldEndSession
-        )
+        speechResponse
     );
 
 }
@@ -78,79 +88,78 @@ function getLatestPodcastUrl ( podcastEpisode ) {
   });
 }
 
-function getPodcastEpisode( session ) {
+function getPodcastEpisode( context ) {
   let podcastEpisode = 0;
 
-  if ( "attributes" in session && "currentPodcastEpisode" in session.attributes ) {
-    podcastEpisode = parseInt( session.attributes.currentPodcastEpisode, 10 );
+  if ( "AudioPlayer" in context && "token" in context.AudioPlayer ) {
+    podcastEpisode = parseInt( context.AudioPlayer.token, 10 ) + 1;
   }
 
   return podcastEpisode;
 }
 
-function getNextPodcastEpisode( session ) {
-  let podcastEpisode = 0;
+function playPodcast ( request, session, context, callback ) {
 
-  if ( "attributes" in session && "currentPodcastEpisode" in session.attributes ) {
-    podcastEpisode = parseInt( session.attributes.currentPodcastEpisode, 10 ) + 1;
-  }
-
-  return podcastEpisode;
-}
-
-function playPodcast ( request, session, callback ) {
-
-    const podcastEpisode = getPodcastEpisode( session );
+    const podcastEpisode = getPodcastEpisode( context );
 
     getLatestPodcastUrl( podcastEpisode ).then( ( podcastUrl ) => {
 
-      callback( null, {
+      const reply = {
         "version": "1.0",
         "response": {
-          "speechletResponse": {
-            "directives": [
-              {
-                "playBehavior": "REPLACE_ALL",
-                "audioItem": {
-                  "stream": {
-                    "token": "0",
-                    "url": podcastUrl,
-                    "offsetInMilliseconds": 0
-                  }
-                }
+          "directives": [{
+            "type": "AudioPlayer.Play",
+            "playBehavior": "REPLACE_ALL",
+            "audioItem": {
+              "stream": {
+                "token": podcastEpisode.toString(),
+                "url": podcastUrl,
+                "offsetInMilliseconds": 0
               }
-            ],
-            "shouldEndSession": false
-          }
+            }
+          }],
+          "shouldEndSession": true
         },
         "sessionAttributes": {
           "currentPodcastEpisode": podcastEpisode,
           "STATE": "PLAY",
           "offsetInMilliseconds": 0,
           "playbackFinished": false,
-          "token": "0"
+          "token": "0",
+          "debug": "100"
         }
-      });
+      };
+
+      console.log( "*****" );
+      console.log( JSON.stringify( reply ) );
+      console.log( "*****" );
+
+      callback( null, reply );
+
     }).catch( console.log );
 }
 
-function stopPodcast ( request, session, callback ) {
+function stopPodcast ( request, session, context, callback ) {
 
-    let sessionAttributes = session.attributes;
+    let sessionAttributes = session.attributes || {};
     sessionAttributes.STATE = "STOP";
 
-    callback( null, {
+    const reply = {
       "version": "1.0",
       "response": {
-        "speechletResponse": {
-          "directives": [{
-            "type": "AudioPlayer.Stop"
-          }],
-          "shouldEndSession": false
-        }
+        "directives": [{
+          "type": "AudioPlayer.Stop"
+        }],
+        "shouldEndSession": true
       },
       "sessionAttributes": sessionAttributes
-    });
+    }
+
+    console.log( "****" );
+    console.log( JSON.stringify( reply ) );
+    console.log( "****" );
+
+    callback( null, reply );
 }
 
 function endSession ( sessionEndedRequest, session, callback ) {
@@ -166,9 +175,24 @@ function securityCheckFails ( applicationId ) {
     return !validAppId;
 }
 
+function noReplyNeeded ( request, session, context, callback ) {
+  console.log( "replying with default object {}" );
+  callback( null, {
+      "version": "1.0",
+      "sessionAttributes": {},
+      "response": {
+          "shouldEndSession": true
+      }
+  });
+}
+
 exports.handler = ( event, context, callback ) => {
 
-  if ( securityCheckFails( event.session.application.applicationId ) ) {
+  console.log( "*^*^*^*" );
+  console.log( JSON.stringify( event ) );
+  console.log( "*^*^*^*" );
+
+  if ( securityCheckFails( event.context.System.application.applicationId ) ) {
       callback('Invalid Application ID');
       return;
   }
@@ -176,19 +200,23 @@ exports.handler = ( event, context, callback ) => {
   alexaServiceRequest ( event )
       .types({
           "LaunchRequest":       introducePodcast,
-          "SessionEndedRequest": endSession
+          "SessionEndedRequest": endSession,
+          "AudioPlayer.PlaybackStarted": noReplyNeeded,
+          "AudioPlayer.PlaybackStopped": noReplyNeeded,
+          "System.ExceptionEncountered": noReplyNeeded
       })
       .intents({
           "PlayAudio":              playPodcast,
+          "StopAudio":              stopPodcast,
           "help":                   introducePodcast,
-          "AMAZON.NextIntent":      () => {},
-          "AMAZON.PauseIntent":     () => {},
-          "AMAZON.PreviousIntent":  () => {},
-          "AMAZON.ResumeIntent":    () => {},
+          "AMAZON.NextIntent":      playPodcast,
+          "AMAZON.PauseIntent":     stopPodcast,
+          "AMAZON.PreviousIntent":  noReplyNeeded,
+          "AMAZON.ResumeIntent":    noReplyNeeded,
           "AMAZON.StartOverIntent": playPodcast,
           "AMAZON.StopIntent":      stopPodcast
       })
       .default( introducePodcast )
-      .run( event.request, event.session, callback );
+      .run( event.request, event.session, event.context, callback );
 
 };

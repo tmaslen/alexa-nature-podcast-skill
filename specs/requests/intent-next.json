@@ -1,8 +1,18 @@
 {
     "version": "1.0",
+    "session": {
+        "new": true,
+        "sessionId": "amzn1.echo-api.session.c0308d98-45c8-4da6-aa1a-10054fd0e086",
+        "application": {
+            "applicationId": "amzn1.ask.skill.c64b0b7b-cfb9-4e3c-bcf1-37fb5b56f045"
+        },
+        "user": {
+            "userId": "amzn1.ask.account.AF37FCX52WJM4QE7DVAR35LP6QHJUM6JQRM7LBEIKI6ZE336L5XLUTPOD6JXMFX4Q5YDMRTFBHN7YZCDWV6VZ74CJ5SFIJBK6RZBTKOCM64Y6TKO3P5AMGLSZJJ2AEPG7TFMBHA54DEMWJ3X6A22GSIOEGHXJE2NBRL27D2UJO75QCJOBXYIIX3667PNZ7Y5VUDYSBESJ4O442Q"
+        }
+    },
     "context": {
         "AudioPlayer": {
-            "offsetInMilliseconds": 534810,
+            "offsetInMilliseconds": 4154,
             "token": "0",
             "playerActivity": "STOPPED"
         },
@@ -23,11 +33,13 @@
         }
     },
     "request": {
-        "type": "AudioPlayer.PlaybackStopped",
-        "requestId": "amzn1.echo-api.request.5c7848b8-7ea5-4f44-b5eb-21af069a59ff",
-        "timestamp": "2017-10-27T12:52:23Z",
+        "type": "IntentRequest",
+        "requestId": "amzn1.echo-api.request.11dae2af-3428-4be9-8b92-29d5dfd048fe",
+        "timestamp": "2017-10-27T14:42:11Z",
         "locale": "en-GB",
-        "token": "0",
-        "offsetInMilliseconds": 534810
+        "intent": {
+            "name": "AMAZON.NextIntent",
+            "confirmationStatus": "NONE"
+        }
     }
 }
